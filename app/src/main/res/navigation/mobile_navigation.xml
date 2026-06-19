@@ -3,24 +3,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_transform">
+    app:startDestination="@+id/nav_home">
 
     <fragment
-        android:id="@+id/nav_transform"
+        android:id="@+id/nav_home"
         android:name="com.example.wearableapplication.ui.transform.TransformFragment"
-        android:label="@string/menu_transform"
+        android:label="@string/menu_home"
         tools:layout="@layout/fragment_transform" />
 
     <fragment
-        android:id="@+id/nav_reflow"
+        android:id="@+id/nav_goalTracker"
         android:name="com.example.wearableapplication.ui.reflow.ReflowFragment"
-        android:label="@string/menu_reflow"
+        android:label="@string/menu_goalTracker"
         tools:layout="@layout/fragment_reflow" />
 
     <fragment
-        android:id="@+id/nav_slideshow"
+        android:id="@+id/nav_recommendations"
         android:name="com.example.wearableapplication.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
+        android:label="@string/menu_recommendations"
         tools:layout="@layout/fragment_slideshow" />
 
     <fragment
