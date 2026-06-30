@@ -1,0 +1,4 @@
+package Services
+
+class HealthConnectManager {
+}
