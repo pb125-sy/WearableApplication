@@ -5,10 +5,11 @@ plugins {
 android {
     namespace = "com.example.wearableapplication"
     compileSdk = 37
+    compileSdkExtension = 7
 
     defaultConfig {
         applicationId = "com.example.wearableapplication"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
@@ -46,4 +47,5 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     implementation("androidx.cardview:cardview:1.0.0")
+    implementation("androidx.health.connect:connect-client:1.1.0")
 }
