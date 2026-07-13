@@ -21,7 +21,19 @@ import com.google.android.material.snackbar.Snackbar
 import com.example.wearableapplication.services.ScreenTimeManager
 import com.example.wearableapplication.services.OpenAIManager
 import com.example.wearableapplication.services.PromptBuilder
-
+import Services.HealthConnectManager
+import androidx.activity.viewModels
+import androidx.annotation.RequiresExtension
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
+import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.PermissionController
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.example.wearableapplication.ui.transform.HealthCountViewModel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import com.example.wearableapplication.model.StressFeatures
 import com.example.wearableapplication.model.AppUsage
 import com.example.wearableapplication.model.StressAnalysis
@@ -39,6 +51,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+    private val viewModel: HealthCountViewModel by viewModels()
+    private val healthConnectManager by lazy { HealthConnectManager(applicationContext) }
     private var bluetoothManager: BluetoothBpmManager? = null
     private var txtBpm: TextView? = null
 
@@ -55,21 +69,28 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresExtension(extension = Build.VERSION_CODES.UPSIDE_DOWN_CAKE, version = 7)
+    private val requestPermissionsLauncher = registerForActivityResult(
+        PermissionController.createRequestPermissionResultContract()
+    ) { grantedPermissions ->
+        if (grantedPermissions.containsAll(healthConnectManager.permissions)) {
+            val healthConnectClient = HealthConnectClient.getOrCreate(this)
+            viewModel.fetchHealthData(healthConnectManager)
+        } else {
+            Snackbar.make(binding.root, "Permissions denied", Snackbar.LENGTH_SHORT).show()
+        }
+    }
+
+    @RequiresExtension(extension = Build.VERSION_CODES.UPSIDE_DOWN_CAKE, version = 7)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         android.util.Log.e("TEST123", "MAIN ACTIVITY STARTED")
         binding = ActivityMainBinding.inflate(layoutInflater)
 
-        JsonTest.testParser()
-
         setContentView(binding.root)
         setSupportActionBar(binding.appBarMain.toolbar)
 
-        binding.appBarMain.fab?.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null)
-                .setAnchorView(R.id.fab).show()
-        }
+        setupHealthConnectPipeline()
 
         /*
         val navHostFragment = supportFragmentManager
@@ -144,9 +165,9 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            // TODO: replace with real values once those sensors/services are wired up.
-            val steps = 6845
-            val caloriesKcal = 315
+            // Pull real values from the ViewModel instead of hardcoding them
+            val steps = viewModel.step.value
+            val caloriesKcal = viewModel.cal.value
 
             txtScreenTime?.text = screenTimeText
             txtAppUsage?.text = appUsageText
@@ -224,6 +245,36 @@ ${if (analysis.confidence <= 1.0) (analysis.confidence * 100).toInt() else analy
             android.util.Log.d("TEST123", "ABOUT TO CALL BLUETOOTH")
             checkPermissionsAndConnect()
         }, 500)
+    }
+
+    @RequiresExtension(extension = Build.VERSION_CODES.UPSIDE_DOWN_CAKE, version = 7)
+    private fun setupHealthConnectPipeline() {
+        if (healthConnectManager.isSdkAvailable()) {
+            lifecycleScope.launch {
+                if (healthConnectManager.hasAllPermissions()) {
+                    viewModel.fetchHealthData(healthConnectManager)
+                } else {
+                    requestPermissionsLauncher.launch(healthConnectManager.permissions)
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.cal.collectLatest { calories ->
+                        binding.appBarMain.contentMain.txtCalories?.text = "$calories kcal"
+                    }
+                }
+
+                launch {
+                    viewModel.step.collectLatest { steps ->
+                        binding.appBarMain.contentMain.txtSteps?.text = "$steps"
+                    }
+                }
+            }
+        }
+
     }
 
     private fun checkPermissionsAndConnect() {

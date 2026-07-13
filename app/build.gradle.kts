@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.wearableapplication"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
@@ -65,6 +65,7 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     implementation("com.openai:openai-java:4.37.0")
     implementation("androidx.cardview:cardview:1.0.0")
+    implementation("androidx.health.connect:connect-client:1.1.0")
 
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.code.gson:gson:2.10.1")
