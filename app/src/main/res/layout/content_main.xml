@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7FA">
+    android:background="@color/background">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,242 +14,220 @@
 
         <!-- Header -->
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="NeuroWave"
-            android:textSize="30sp"
-            android:textStyle="bold"
-            android:textColor="#1A237E"/>
+            android:background="@drawable/gradient_header"
+            android:orientation="vertical"
+            android:padding="24dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="AI Powered Stress Monitoring"
-            android:textColor="#616161"
-            android:textSize="14sp"
-            android:layout_marginBottom="16dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NeuroWave"
+                android:textColor="@color/white"
+                android:textSize="30sp"
+                android:textStyle="bold" />
 
-        <!-- BPM Card -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="AI Powered Stress Monitoring"
+                android:textColor="@color/white"
+                android:textSize="15sp" />
+
+        </LinearLayout>
+
+        <!-- Heart Rate -->
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            card_view:cardCornerRadius="16dp"
-            card_view:cardElevation="6dp">
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="6dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:orientation="vertical">
+                android:background="@drawable/dashboard_card"
+                android:orientation="vertical"
+                android:padding="18dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="❤️ Heart Rate"/>
+                    android:text="❤️ Heart Rate"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/txtBpm"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="72 BPM"
-                    android:textSize="24sp"
-                    android:textStyle="bold"/>
+                    android:layout_marginTop="8dp"
+                    android:text="-- BPM"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
+
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
 
-        <!-- Screen Time -->
+        <!-- Daily Summary -->
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            card_view:cardCornerRadius="16dp">
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="5dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:orientation="vertical">
+                android:background="@drawable/dashboard_card"
+                android:orientation="vertical"
+                android:padding="18dp">
 
                 <TextView
-                    android:text="📱 Screen Time"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:text="Today's Summary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="📱 Screen Time" />
 
                 <TextView
                     android:id="@+id/txtScreenTime"
-                    android:text="4h 12m"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:text="Loading..."
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
 
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-        <!-- App Usage -->
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            card_view:cardCornerRadius="16dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:orientation="vertical">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp" />
 
                 <TextView
-                    android:text="📊 App Usage Duration"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:text="📊 App Usage Duration" />
 
                 <TextView
                     android:id="@+id/txtAppUsage"
-                    android:text="3h 40m"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:text="Loading..."
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-        <!-- Unlock Count -->
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            card_view:cardCornerRadius="16dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:orientation="vertical">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp" />
 
                 <TextView
-                    android:text="🔓 Unlock Count"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:text="🔓 Unlock Count" />
 
                 <TextView
                     android:id="@+id/txtUnlockCount"
-                    android:text="35"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-        <!-- Steps -->
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            card_view:cardCornerRadius="16dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:orientation="vertical">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp" />
 
                 <TextView
-                    android:text="👣 Steps"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:text="👣 Steps" />
 
                 <TextView
                     android:id="@+id/txtSteps"
-                    android:text="6500"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-        <!-- Calories -->
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            card_view:cardCornerRadius="16dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:orientation="vertical">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp" />
 
                 <TextView
-                    android:text="🔥 Calories Burned"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:text="🔥 Calories Burned" />
 
                 <TextView
                     android:id="@+id/txtCalories"
-                    android:text="350 kcal"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:text="-- kcal"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
 
-        <!-- AI Analysis Card -->
+        <!-- AI Card -->
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            card_view:cardCornerRadius="16dp"
-            card_view:cardElevation="8dp">
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/ai_card"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
                 <TextView
-                    android:text="🤖 AI Stress Analysis"
-                    android:textStyle="bold"
-                    android:textSize="18sp"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:text="🧠 AI Stress Analysis"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <ProgressBar
+                    android:id="@+id/progressAnalysis"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp" />
 
                 <TextView
                     android:id="@+id/txtAnalysis"
-                    android:text="Stress analysis will appear here."
-                    android:layout_marginTop="8dp"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Press Analyze Stress"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
 
                 <Button
                     android:id="@+id/btnAnalyze"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Analyze Stress"
-                    android:layout_marginTop="12dp"/>
+                    android:layout_marginTop="16dp"
+                    android:text="Analyze Stress" />
 
             </LinearLayout>
 

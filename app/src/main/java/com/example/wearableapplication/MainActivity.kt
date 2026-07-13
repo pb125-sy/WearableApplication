@@ -13,15 +13,20 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
 import com.example.wearableapplication.databinding.ActivityMainBinding
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import com.example.wearableapplication.Services.ScreenTimeManager
+import com.example.wearableapplication.services.ScreenTimeManager
+import com.example.wearableapplication.services.OpenAIManager
+import com.example.wearableapplication.services.PromptBuilder
+
+import com.example.wearableapplication.model.StressFeatures
+import com.example.wearableapplication.model.AppUsage
+import com.example.wearableapplication.model.StressAnalysis
+
+import com.example.wearableapplication.JsonTest
 
 class MainActivity : AppCompatActivity() {
 
@@ -37,6 +42,9 @@ class MainActivity : AppCompatActivity() {
     private var bluetoothManager: BluetoothBpmManager? = null
     private var txtBpm: TextView? = null
 
+    // Most recent BPM value received from the wearable, used when building the AI prompt.
+    private var latestHeartRate: Int = 0
+
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -51,6 +59,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         android.util.Log.e("TEST123", "MAIN ACTIVITY STARTED")
         binding = ActivityMainBinding.inflate(layoutInflater)
+
+        JsonTest.testParser()
+
         setContentView(binding.root)
         setSupportActionBar(binding.appBarMain.toolbar)
 
@@ -70,29 +81,29 @@ class MainActivity : AppCompatActivity() {
             return
         }
         */
-/*
-        val navController = navHostFragment.navController
-        val navView: NavigationView? = findViewById(R.id.nav_view)
+        /*
+                val navController = navHostFragment.navController
+                val navView: NavigationView? = findViewById(R.id.nav_view)
 
-        if (navView != null) {
-            appBarConfiguration = AppBarConfiguration(
-                setOf(
-                    R.id.nav_home, R.id.nav_goalTracker,
-                    R.id.nav_recommendations, R.id.nav_settings
-                ),
-                findViewById(R.id.drawer_layout)
-            )
-            setupActionBarWithNavController(navController, appBarConfiguration)
-            navView.setupWithNavController(navController)
-        } else {
-            appBarConfiguration = AppBarConfiguration(
-                setOf(
-                    R.id.nav_home, R.id.nav_goalTracker, R.id.nav_recommendations
-                )
-            )
-            setupActionBarWithNavController(navController, appBarConfiguration)
-        }
-*/
+                if (navView != null) {
+                    appBarConfiguration = AppBarConfiguration(
+                        setOf(
+                            R.id.nav_home, R.id.nav_goalTracker,
+                            R.id.nav_recommendations, R.id.nav_settings
+                        ),
+                        findViewById(R.id.drawer_layout)
+                    )
+                    setupActionBarWithNavController(navController, appBarConfiguration)
+                    navView.setupWithNavController(navController)
+                } else {
+                    appBarConfiguration = AppBarConfiguration(
+                        setOf(
+                            R.id.nav_home, R.id.nav_goalTracker, R.id.nav_recommendations
+                        )
+                    )
+                    setupActionBarWithNavController(navController, appBarConfiguration)
+                }
+        */
         // Wait for layout to finish then find txtBpm and start Bluetooth
         /*Handler(Looper.getMainLooper()).postDelayed({
             txtBpm = findViewById(R.id.txtBpm)
@@ -108,22 +119,106 @@ class MainActivity : AppCompatActivity() {
             txtBpm = findViewById(R.id.txtBpm)
 
             txtScreenTime = findViewById(R.id.txtScreenTime)
-            val screenManager = ScreenTimeManager(this)
-            txtScreenTime?.text = screenManager.getTodayScreenTime()
-
-
             txtAppUsage = findViewById(R.id.txtAppUsage)
             txtUnlockCount = findViewById(R.id.txtUnlockCount)
             txtSteps = findViewById(R.id.txtSteps)
             txtCalories = findViewById(R.id.txtCalories)
             txtAnalysis = findViewById(R.id.txtAnalysis)
 
-            //txtScreenTime?.text = "8 h 25 min"
-            txtAppUsage?.text = "2 h 10 min"
-            txtUnlockCount?.text = "42"
-            txtSteps?.text = "6845"
-            txtCalories?.text = "315 kcal"
-            txtAnalysis?.text = "Low Stress"
+            // ---- Pull real usage data instead of hardcoding it ----
+            val screenManager = ScreenTimeManager(this)
+
+            val screenTimeText = screenManager.getTodayScreenTime()
+            val appUsageList = screenManager.getTodayAppUsage()
+            val unlockCount = screenManager.getTodayUnlockCount()
+
+            // Build a human readable "App : Xh Ym" block from the real per-app usage list.
+            val appUsageText = if (appUsageList.isEmpty()) {
+                "No app usage recorded"
+            } else {
+                appUsageList.joinToString("\n") { usage ->
+                    val hours = usage.usageTime / (60 * 60 * 1000L)
+                    val minutes = (usage.usageTime / (60 * 1000L)) % 60
+                    val label = if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
+                    "${usage.packageName} : $label"
+                }
+            }
+
+            // TODO: replace with real values once those sensors/services are wired up.
+            val steps = 6845
+            val caloriesKcal = 315
+
+            txtScreenTime?.text = screenTimeText
+            txtAppUsage?.text = appUsageText
+            txtUnlockCount?.text = unlockCount.toString()
+            txtSteps?.text = steps.toString()
+            txtCalories?.text = "$caloriesKcal kcal"
+            txtAnalysis?.text = "Analyzing..."
+
+            val openAIManager = OpenAIManager()
+
+            val stressFeatures = StressFeatures(
+                heartRate = latestHeartRate,
+                screenTime = screenTimeText,
+                appUsage = appUsageList,
+                unlockCount = unlockCount,
+                steps = steps,
+                calories = "$caloriesKcal kcal"
+            )
+
+            val prompt =
+                PromptBuilder.buildPrompt(
+                    stressFeatures
+                )
+
+            openAIManager.analyzeStress(
+                prompt = prompt,
+                onSuccess = { analysis ->
+
+                    runOnUiThread {
+
+                        txtAnalysis?.text = """
+Stress Score:
+${analysis.stressScore.toInt()}/100
+
+
+Stress Level:
+${analysis.stressLevel}
+
+
+Main Factors:
+
+${analysis.primaryFactors.joinToString("\n") {
+                            "• $it"
+                        }}
+
+
+Recommendations:
+
+${analysis.recommendations.joinToString("\n") {
+                            "• $it"
+                        }}
+Breathing Exercise:
+${analysis.breathingExercise}
+
+Activity:
+${analysis.activitySuggestion}
+
+Screen Advice:
+${analysis.screenTimeAdvice}
+
+AI Confidence:
+${if (analysis.confidence <= 1.0) (analysis.confidence * 100).toInt() else analysis.confidence.toInt()}%
+""".trimIndent()
+                    }
+                },
+
+                onError = { error ->
+                    runOnUiThread {
+                        txtAnalysis?.text = error
+                    }
+                }
+            )
 
             android.util.Log.d("TEST123", "txtBpm value = $txtBpm")
             android.util.Log.d("TEST123", "ABOUT TO CALL BLUETOOTH")
@@ -151,6 +246,7 @@ class MainActivity : AppCompatActivity() {
         bluetoothManager?.disconnect()
         bluetoothManager = BluetoothBpmManager(
             onBpmReceived = { bpm ->
+                latestHeartRate = bpm
                 runOnUiThread { txtBpm?.text = "$bpm BPM" }
             },
             onStatusChanged = { status ->
