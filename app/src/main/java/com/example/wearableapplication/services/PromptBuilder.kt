@@ -58,6 +58,8 @@ IMPORTANT RULES:
 - Consider multiple signals together.
 - Explain which factors influenced your estimation.
 - Give practical lifestyle recommendations.
+- Recommendations MUST be specifically tailored to the provided data (e.g. if Screen Time is high, focus on digital detox; if Heart Rate is elevated compared to low activity, suggest relaxation).
+- If Heart Rate is 0, ignore it in the analysis as it means the sensor is still connecting.
 
 
 ==============================

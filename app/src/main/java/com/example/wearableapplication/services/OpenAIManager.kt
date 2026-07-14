@@ -8,7 +8,9 @@ import com.example.wearableapplication.model.StressAnalysis
 
 import com.openai.client.OpenAIClient
 import com.openai.client.okhttp.OpenAIOkHttpClient
-import com.openai.models.responses.ResponseCreateParams
+import com.openai.models.chat.completions.ChatCompletionCreateParams
+import com.openai.models.chat.completions.ChatCompletionUserMessageParam
+import com.openai.models.chat.completions.ChatCompletionMessageParam
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.decodeFromString
@@ -80,133 +82,56 @@ class OpenAIManager {
      *
      */
     fun analyzeStress(
-
         prompt: String,
-
         onSuccess: (StressAnalysis) -> Unit,
-
         onError: (String) -> Unit
-
     ) {
-
-
+        Log.d(TAG, "analyzeStress called. Key length: ${BuildConfig.OPENAI_API_KEY.length}")
+        if (BuildConfig.OPENAI_API_KEY.isEmpty()) {
+            onError("API Key is missing. Please add it to local.properties")
+            return
+        }
 
         Thread {
-
-
             try {
-
-
-                Log.d(
-                    TAG,
-                    "Sending request to OpenAI..."
-                )
-
-
-                Log.d(
-                    TAG,
-                    prompt
-                )
-
-
-
-
+                Log.d(TAG, "Sending request to OpenAI with model: gpt-4o-mini")
+                
                 val params =
-
-                    ResponseCreateParams.builder()
-
-                        .model(
-                            "gpt-5.5"
+                    ChatCompletionCreateParams.builder()
+                        .model("gpt-4o-mini")
+                        .messages(
+                            listOf(
+                                ChatCompletionMessageParam.ofUser(
+                                    ChatCompletionUserMessageParam.builder()
+                                        .content(prompt)
+                                        .build()
+                                )
+                            )
                         )
-
-                        .input(
-                            prompt
-                        )
-
                         .build()
 
+                Log.d(TAG, "Request params built, calling OpenAI...")
+                val response = client.chat().completions().create(params)
+                Log.d(TAG, "OpenAI response received")
 
+                val choice = response.choices().firstOrNull()
+                if (choice == null) {
+                    onError("AI returned no choices")
+                    return@Thread
+                }
 
+                val jsonResponse = choice.message().content().orElse("")
+                if (jsonResponse.isEmpty()) {
+                    onError("AI returned an empty response")
+                    return@Thread
+                }
 
+                Log.d(TAG, "Raw JSON Response: $jsonResponse")
 
-                val response =
+                val cleaned = cleanJson(jsonResponse)
+                Log.d(TAG, "Cleaned JSON: $cleaned")
 
-                    client.responses()
-                        .create(
-                            params
-                        )
-
-
-
-
-
-                /**
-                 * Extract text from response.
-                 *
-                 * OpenAI SDK version used
-                 * in this project does not expose
-                 * response.outputText().
-                 *
-                 */
-                val jsonResponse =
-
-                    response.output()
-
-                        .mapNotNull {
-
-                                item ->
-
-                            item.message()
-                                .orElse(null)
-
-                        }
-
-                        .flatMap {
-
-                                message ->
-
-                            message.content()
-
-                        }
-
-                        .mapNotNull {
-
-                                content ->
-
-                            content.outputText()
-                                .orElse(null)
-
-                        }
-
-                        .joinToString("") {
-
-                            it.text()
-
-                        }
-
-
-
-
-                Log.d(
-                    TAG,
-                    "Raw JSON Response:"
-                )
-
-
-                Log.d(
-                    TAG,
-                    jsonResponse
-                )
-
-                val analysis =
-
-                    json.decodeFromString<StressAnalysisResponse>(
-
-                        cleanJson(
-                            jsonResponse
-                        )
-
-                    )
+                val analysis = json.decodeFromString<StressAnalysisResponse>(cleaned)
 
 
 
@@ -251,44 +176,21 @@ class OpenAIManager {
 
 
 
-                Log.d(
-                    TAG,
-                    "JSON Parsing Successful"
-                )
+                Log.d(TAG, "JSON Parsing Successful")
 
+                onSuccess(result)
 
-
-                onSuccess(
-                    result
-                )
-
-
-
+            } catch (e: Throwable) {
+                Log.e(TAG, "OpenAI Error", e)
+                val errorMessage = when {
+                    e.message?.contains("401") == true -> "Invalid API Key"
+                    e.message?.contains("429") == true -> "API Rate Limit Exceeded"
+                    e.message?.contains("Unable to resolve host") == true -> "No Internet Connection"
+                    else -> e.message ?: "Unknown Error"
+                }
+                onError(errorMessage)
             }
-
-            catch(e: Exception) {
-
-
-                Log.e(
-                    TAG,
-                    "OpenAI Error",
-                    e
-                )
-
-
-                onError(
-
-                    e.message
-                        ?: "Unknown Error"
-
-                )
-
-            }
-
-
-
         }.start()
-
     }
 
 

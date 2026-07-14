@@ -48,6 +48,7 @@ class MainActivity : AppCompatActivity() {
     private var txtSteps: TextView? = null
     private var txtCalories: TextView? = null
     private var txtAnalysis: TextView? = null
+    private var btnAnalyze: android.widget.Button? = null
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
@@ -80,6 +81,8 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(binding.root, "Permissions denied", Snackbar.LENGTH_SHORT).show()
         }
     }
+
+    private val openAIManager = OpenAIManager()
 
     @RequiresExtension(extension = Build.VERSION_CODES.UPSIDE_DOWN_CAKE, version = 7)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -145,6 +148,7 @@ class MainActivity : AppCompatActivity() {
             txtSteps = findViewById(R.id.txtSteps)
             txtCalories = findViewById(R.id.txtCalories)
             txtAnalysis = findViewById(R.id.txtAnalysis)
+            btnAnalyze = findViewById(R.id.btnAnalyze)
 
             // ---- Pull real usage data instead of hardcoding it ----
             val screenManager = ScreenTimeManager(this)
@@ -174,72 +178,11 @@ class MainActivity : AppCompatActivity() {
             txtUnlockCount?.text = unlockCount.toString()
             txtSteps?.text = steps.toString()
             txtCalories?.text = "$caloriesKcal kcal"
-            txtAnalysis?.text = "Analyzing..."
 
-            val openAIManager = OpenAIManager()
-
-            val stressFeatures = StressFeatures(
-                heartRate = latestHeartRate,
-                screenTime = screenTimeText,
-                appUsage = appUsageList,
-                unlockCount = unlockCount,
-                steps = steps,
-                calories = "$caloriesKcal kcal"
-            )
-
-            val prompt =
-                PromptBuilder.buildPrompt(
-                    stressFeatures
-                )
-
-            openAIManager.analyzeStress(
-                prompt = prompt,
-                onSuccess = { analysis ->
-
-                    runOnUiThread {
-
-                        txtAnalysis?.text = """
-Stress Score:
-${analysis.stressScore.toInt()}/100
-
-
-Stress Level:
-${analysis.stressLevel}
-
-
-Main Factors:
-
-${analysis.primaryFactors.joinToString("\n") {
-                            "• $it"
-                        }}
-
-
-Recommendations:
-
-${analysis.recommendations.joinToString("\n") {
-                            "• $it"
-                        }}
-Breathing Exercise:
-${analysis.breathingExercise}
-
-Activity:
-${analysis.activitySuggestion}
-
-Screen Advice:
-${analysis.screenTimeAdvice}
-
-AI Confidence:
-${if (analysis.confidence <= 1.0) (analysis.confidence * 100).toInt() else analysis.confidence.toInt()}%
-""".trimIndent()
-                    }
-                },
-
-                onError = { error ->
-                    runOnUiThread {
-                        txtAnalysis?.text = error
-                    }
-                }
-            )
+            btnAnalyze?.setOnClickListener {
+                android.util.Log.d("TEST123", "Analyze button clicked")
+                runStressAnalysis()
+            }
 
             android.util.Log.d("TEST123", "txtBpm value = $txtBpm")
             android.util.Log.d("TEST123", "ABOUT TO CALL BLUETOOTH")
@@ -298,13 +241,81 @@ ${if (analysis.confidence <= 1.0) (analysis.confidence * 100).toInt() else analy
         bluetoothManager = BluetoothBpmManager(
             onBpmReceived = { bpm ->
                 latestHeartRate = bpm
-                runOnUiThread { txtBpm?.text = "$bpm BPM" }
+                runOnUiThread {
+                    txtBpm?.text = "$bpm BPM"
+                }
             },
             onStatusChanged = { status ->
                 runOnUiThread { txtBpm?.text = status }
             }
         )
         bluetoothManager?.connect()
+    }
+
+    @RequiresExtension(extension = Build.VERSION_CODES.UPSIDE_DOWN_CAKE, version = 7)
+    private fun runStressAnalysis() {
+        android.util.Log.d("TEST123", "runStressAnalysis started. HR: $latestHeartRate")
+        if (latestHeartRate <= 0) {
+            txtAnalysis?.text = "Heart rate sensor is not connected. Please check your wearable connection and try again."
+            return
+        }
+
+        txtAnalysis?.text = "Analyzing..."
+
+        val screenManager = ScreenTimeManager(this)
+        val screenTimeText = screenManager.getTodayScreenTime()
+        val appUsageList = screenManager.getTodayAppUsage()
+        val unlockCount = screenManager.getTodayUnlockCount()
+
+        val steps = viewModel.step.value
+        val caloriesKcal = viewModel.cal.value
+
+        val stressFeatures = StressFeatures(
+            heartRate = latestHeartRate,
+            screenTime = screenTimeText,
+            appUsage = appUsageList,
+            unlockCount = unlockCount,
+            steps = steps,
+            calories = "$caloriesKcal kcal"
+        )
+
+        val prompt = PromptBuilder.buildPrompt(stressFeatures)
+
+        openAIManager.analyzeStress(
+            prompt = prompt,
+            onSuccess = { analysis ->
+                runOnUiThread {
+                    txtAnalysis?.text = """
+Stress Score:
+${analysis.stressScore.toInt()}/100
+
+Stress Level:
+${analysis.stressLevel}
+
+Main Factors:
+${analysis.primaryFactors.joinToString("\n") { "• $it" }}
+
+Recommendations:
+${analysis.recommendations.joinToString("\n") { "• $it" }}
+
+Breathing Exercise:
+${analysis.breathingExercise}
+
+Activity:
+${analysis.activitySuggestion}
+
+Screen Advice:
+${analysis.screenTimeAdvice}
+
+AI Confidence:
+${if (analysis.confidence <= 1.0) (analysis.confidence * 100).toInt() else analysis.confidence.toInt()}%
+""".trimIndent()
+                }
+            },
+            onError = { error ->
+                runOnUiThread { txtAnalysis?.text = error }
+            }
+        )
     }
 
     override fun onDestroy() {
