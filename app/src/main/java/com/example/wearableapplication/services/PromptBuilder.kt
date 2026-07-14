@@ -58,7 +58,12 @@ IMPORTANT RULES:
 - Consider multiple signals together.
 - Explain which factors influenced your estimation.
 - Give practical lifestyle recommendations.
-- Recommendations MUST be specifically tailored to the provided data (e.g. if Screen Time is high, focus on digital detox; if Heart Rate is elevated compared to low activity, suggest relaxation).
+- Recommendations MUST be specifically tailored to the provided data using these logic rules:
+    * If Heart Rate > 90 BPM while Steps < 100: User is likely experiencing mental stress. Suggest immediate 2-minute breathing exercise.
+    * If Screen Time > 4 hours: Recommend a "Digital Detox" and explain the link between blue light and stress.
+    * If Unlock Count > 50: Address "Compulsive Checking" and suggest leaving the phone in another room.
+    * If Steps < 4000: Recommend a "Movement Break" to clear the mind.
+    * If App Usage shows high social media (Instagram, TikTok, etc.): Suggest limiting social comparison.
 - If Heart Rate is 0, ignore it in the analysis as it means the sensor is still connecting.
 
 
