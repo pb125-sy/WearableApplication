@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Stress Questionnaire"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Question 1 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1. How stressed do you feel right now?"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(1 = Very Low to 5 = Very High)"
+            android:textSize="12sp"
+            android:layout_marginBottom="8dp" />
+
+        <RadioGroup
+            android:id="@+id/rgStress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+            <RadioButton android:id="@+id/rbStress1" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="1" />
+            <RadioButton android:id="@+id/rbStress2" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="2" />
+            <RadioButton android:id="@+id/rbStress3" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="3" />
+            <RadioButton android:id="@+id/rbStress4" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="4" />
+            <RadioButton android:id="@+id/rbStress5" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="5" />
+        </RadioGroup>
+
+        <!-- Question 2 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2. How is your current mood?"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <RadioGroup
+            android:id="@+id/rgMood"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+            <RadioButton android:id="@+id/rbMoodHappy" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Happy" />
+            <RadioButton android:id="@+id/rbMoodNeutral" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Neutral" />
+            <RadioButton android:id="@+id/rbMoodStressed" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Stressed" />
+        </RadioGroup>
+
+        <!-- Question 3 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="3. How would you rate your sleep quality last night?"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(1 = Very Poor to 5 = Excellent)"
+            android:textSize="12sp"
+            android:layout_marginBottom="8dp" />
+
+        <RadioGroup
+            android:id="@+id/rgSleep"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+            <RadioButton android:id="@+id/rbSleep1" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="1" />
+            <RadioButton android:id="@+id/rbSleep2" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="2" />
+            <RadioButton android:id="@+id/rbSleep3" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="3" />
+            <RadioButton android:id="@+id/rbSleep4" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="4" />
+            <RadioButton android:id="@+id/rbSleep5" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="5" />
+        </RadioGroup>
+
+        <!-- Question 4 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="4. How mentally tired do you feel right now?"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(1 = Not Tired to 5 = Extremely Tired)"
+            android:textSize="12sp"
+            android:layout_marginBottom="8dp" />
+
+        <RadioGroup
+            android:id="@+id/rgFatigue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+            <RadioButton android:id="@+id/rbFatigue1" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="1" />
+            <RadioButton android:id="@+id/rbFatigue2" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="2" />
+            <RadioButton android:id="@+id/rbFatigue3" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="3" />
+            <RadioButton android:id="@+id/rbFatigue4" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="4" />
+            <RadioButton android:id="@+id/rbFatigue5" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="5" />
+        </RadioGroup>
+
+    </LinearLayout>
+</ScrollView>

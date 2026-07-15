@@ -9,6 +9,10 @@ import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -37,6 +41,7 @@ import kotlinx.coroutines.launch
 import com.example.wearableapplication.model.StressFeatures
 import com.example.wearableapplication.model.AppUsage
 import com.example.wearableapplication.model.StressAnalysis
+import com.example.wearableapplication.model.Questionnaire
 
 import com.example.wearableapplication.JsonTest
 
@@ -165,7 +170,7 @@ class MainActivity : AppCompatActivity() {
                     val hours = usage.usageTime / (60 * 60 * 1000L)
                     val minutes = (usage.usageTime / (60 * 1000L)) % 60
                     val label = if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
-                    "${usage.packageName} : $label"
+                    "${usage.appName} : $label"
                 }
             }
 
@@ -181,7 +186,7 @@ class MainActivity : AppCompatActivity() {
 
             btnAnalyze?.setOnClickListener {
                 android.util.Log.d("TEST123", "Analyze button clicked")
-                runStressAnalysis()
+                showQuestionnaireDialog()
             }
 
             android.util.Log.d("TEST123", "txtBpm value = $txtBpm")
@@ -253,7 +258,46 @@ class MainActivity : AppCompatActivity() {
     }
 
     @RequiresExtension(extension = Build.VERSION_CODES.UPSIDE_DOWN_CAKE, version = 7)
-    private fun runStressAnalysis() {
+    private fun showQuestionnaireDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_questionnaire, null)
+        val rgStress = dialogView.findViewById<RadioGroup>(R.id.rgStress)
+        val rgMood = dialogView.findViewById<RadioGroup>(R.id.rgMood)
+        val rgSleep = dialogView.findViewById<RadioGroup>(R.id.rgSleep)
+        val rgFatigue = dialogView.findViewById<RadioGroup>(R.id.rgFatigue)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(false)
+            .setPositiveButton("Submit", null) // Set to null to handle manually
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.show()
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val stressId = rgStress.checkedRadioButtonId
+            val moodId = rgMood.checkedRadioButtonId
+            val sleepId = rgSleep.checkedRadioButtonId
+            val fatigueId = rgFatigue.checkedRadioButtonId
+
+            if (stressId == -1 || moodId == -1 || sleepId == -1 || fatigueId == -1) {
+                Toast.makeText(this, "Please answer all questions", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val stress = dialogView.findViewById<RadioButton>(stressId).text.toString().toInt()
+            val mood = dialogView.findViewById<RadioButton>(moodId).text.toString()
+            val sleep = dialogView.findViewById<RadioButton>(sleepId).text.toString().toInt()
+            val fatigue = dialogView.findViewById<RadioButton>(fatigueId).text.toString().toInt()
+
+            val questionnaire = Questionnaire(stress, mood, sleep, fatigue)
+            runStressAnalysis(questionnaire)
+            dialog.dismiss()
+        }
+    }
+
+    @RequiresExtension(extension = Build.VERSION_CODES.UPSIDE_DOWN_CAKE, version = 7)
+    private fun runStressAnalysis(questionnaire: Questionnaire? = null) {
         android.util.Log.d("TEST123", "runStressAnalysis started. HR: $latestHeartRate")
         if (latestHeartRate <= 0) {
             txtAnalysis?.text = "Heart rate sensor is not connected. Please check your wearable connection and try again."
@@ -276,7 +320,8 @@ class MainActivity : AppCompatActivity() {
             appUsage = appUsageList,
             unlockCount = unlockCount,
             steps = steps,
-            calories = "$caloriesKcal kcal"
+            calories = "$caloriesKcal kcal",
+            questionnaire = questionnaire
         )
 
         val prompt = PromptBuilder.buildPrompt(stressFeatures)

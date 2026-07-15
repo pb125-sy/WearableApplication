@@ -118,6 +118,11 @@ data class StressFeatures(
 
 
     /**
+     * User self-reported questionnaire data.
+     */
+    val questionnaire: Questionnaire? = null,
+
+    /**
      * Optional timestamp.
      *
      * Useful when storing multiple

@@ -66,7 +66,6 @@ class ScreenTimeManager(
             "com.android.systemui",
             "com.android.launcher",
             "com.google.android.permissioncontroller",
-            "com.android.settings",
             "com.google.android.inputmethod.latin",
 
             /*
@@ -300,6 +299,8 @@ class ScreenTimeManager(
         val hybridData =
             calculateHybridAppUsage()
 
+        val pm = context.packageManager
+
         return hybridData
             .filter {
                 !isIgnoredPackage(
@@ -308,8 +309,33 @@ class ScreenTimeManager(
             }
 
             .map {
+                var appLabel = try {
+                    pm.getApplicationLabel(pm.getApplicationInfo(it.key, 0)).toString()
+                } catch (e: Exception) {
+                    it.key
+                }
+
+                // If the resolved label still looks like a package name, try to extract a better name.
+                if (appLabel == it.key || (appLabel.contains(".") && appLabel.lowercase() == appLabel)) {
+                    val parts = it.key.split(".")
+                    appLabel = if (parts.size >= 2) {
+                        val name = if (parts.last().length <= 3 && parts.size >= 3) {
+                            // Handle cases like com.example.app (returns app) or com.instagram.android (returns instagram)
+                            parts[parts.size - 2]
+                        } else {
+                            parts.last()
+                        }
+                        name.replaceFirstChar { char ->
+                            if (char.isLowerCase()) char.titlecase(Locale.getDefault()) else char.toString()
+                        }
+                    } else {
+                        it.key
+                    }
+                }
+
                 AppUsage(
                     packageName = it.key,
+                    appName = appLabel,
                     usageTime = it.value
                 )
             }

@@ -64,6 +64,8 @@ IMPORTANT RULES:
     * If Unlock Count > 50: Address "Compulsive Checking" and suggest leaving the phone in another room.
     * If Steps < 4000: Recommend a "Movement Break" to clear the mind.
     * If App Usage shows high social media (Instagram, TikTok, etc.): Suggest limiting social comparison.
+    * If User Self-Reported Stress is High but Physiological signals are Normal: Acknowledge the user's feelings and suggest mindfulness.
+    * If User Sleep Quality is Low: Explain how poor sleep contributes to today's stress level.
 - If Heart Rate is 0, ignore it in the analysis as it means the sensor is still connecting.
 
 
@@ -132,6 +134,16 @@ Interpretation guideline:
 Low physical activity combined with
 high screen usage may contribute to
 mental fatigue.
+
+
+==============================
+USER SELF-REPORTED DATA
+==============================
+
+Subjective Stress: ${features.questionnaire?.stressLevel ?: "Not provided"}/5
+Mood: ${features.questionnaire?.mood ?: "Not provided"}
+Sleep Quality: ${features.questionnaire?.sleepQuality ?: "Not provided"}/5
+Mental Fatigue: ${features.questionnaire?.mentalFatigue ?: "Not provided"}/5
 
 
 ==============================
@@ -252,7 +264,7 @@ Recommendations should include:
                     )
 
 
-                "${it.packageName}: $duration"
+                "${it.appName}: $duration"
 
             }
 

@@ -29,14 +29,6 @@
                 android:textSize="30sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="AI Powered Stress Monitoring"
-                android:textColor="@color/white"
-                android:textSize="15sp" />
-
         </LinearLayout>
 
         <!-- Heart Rate -->
