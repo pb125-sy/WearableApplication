@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
 
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10"
+    id("com.google.devtools.ksp")
 }
 
 val localProperties = Properties().apply {
@@ -71,4 +72,13 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
+    val roomVersion = "2.7.0-alpha11" // Updated to fix Kotlin 2.1 compatibility issue
+
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+
+    // Annotation processor (use KSP or KAPT)
+    ksp("androidx.room:room-compiler:$roomVersion")
 }

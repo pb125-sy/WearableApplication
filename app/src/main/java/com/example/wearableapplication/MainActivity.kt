@@ -26,6 +26,7 @@ import com.example.wearableapplication.services.ScreenTimeManager
 import com.example.wearableapplication.services.OpenAIManager
 import com.example.wearableapplication.services.PromptBuilder
 import Services.HealthConnectManager
+import android.content.Context
 import androidx.activity.viewModels
 import androidx.annotation.RequiresExtension
 import androidx.navigation.fragment.NavHostFragment
@@ -44,6 +45,33 @@ import com.example.wearableapplication.model.StressAnalysis
 import com.example.wearableapplication.model.Questionnaire
 
 import com.example.wearableapplication.JsonTest
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import java.util.concurrent.TimeUnit
+
+private fun startBackgroundDataHarvesting(context: Context) {
+    // Optional: Only run if the device has a bit of battery
+    val constraints = Constraints.Builder()
+        .setRequiresBatteryNotLow(true)
+        .build()
+
+    // Create a request to run every 15 minutes (this is the minimum allowed by Android)
+    val harvestRequest = PeriodicWorkRequestBuilder<DataHarvestWorker>(15, TimeUnit.MINUTES)
+        .setConstraints(constraints)
+        .build()
+
+    // Enqueue unique work prevents multiple identical timers from running at the same time
+    WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+        "HarvestDataWork",
+        ExistingPeriodicWorkPolicy.KEEP, // If it's already running, don't restart the timer
+        harvestRequest
+    )
+}
+
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -99,6 +127,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.appBarMain.toolbar)
 
         setupHealthConnectPipeline()
+        startBackgroundDataHarvesting(this)
 
         /*
         val navHostFragment = supportFragmentManager
@@ -158,8 +187,9 @@ class MainActivity : AppCompatActivity() {
             // ---- Pull real usage data instead of hardcoding it ----
             val screenManager = ScreenTimeManager(this)
 
-            val screenTimeText = screenManager.getTodayScreenTime()
             val appUsageList = screenManager.getTodayAppUsage()
+            val totalMs = appUsageList.sumOf { it.usageTime }
+            val screenTimeText = screenManager.formatDuration(totalMs)
             val unlockCount = screenManager.getTodayUnlockCount()
 
             // Build a human readable "App : Xh Ym" block from the real per-app usage list.
@@ -380,6 +410,17 @@ ${if (analysis.confidence <= 1.0) (analysis.confidence * 100).toInt() else analy
             R.id.nav_settings -> {
                 val navController = findNavController(R.id.nav_host_fragment_content_main)
                 navController.navigate(R.id.nav_settings)
+            }
+            R.id.action_export_csv -> {
+                lifecycleScope.launch {
+                    val csvManager = CsvManager(this@MainActivity)
+                    val file = csvManager.exportDatabaseToCsv()
+                    if (file != null) {
+                        Toast.makeText(this@MainActivity, "Exported to ${file.absolutePath}", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(this@MainActivity, "Export failed or no data", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
         return super.onOptionsItemSelected(item)
