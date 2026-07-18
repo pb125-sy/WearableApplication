@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+//import com.example.wearableapplication.model.Questionnaire
 
 class DataHarvestWorker(
     appContext: Context,
@@ -37,6 +38,7 @@ class DataHarvestWorker(
                 val calories = healthConnectManager.readCaloriesForWindow(startTime, endTime)
                 val screenUsage = screenTimeManager.getUsageForWindow(startTime, endTime)
                 val unlocks = screenTimeManager.getUnlocksForWindow(startTime, endTime)
+                val latestQuestionnaire = database.questionnaireDao().getLatestQuestionnaire()
 
                 // 4. Create the Room Record
 
@@ -47,10 +49,10 @@ class DataHarvestWorker(
                     stepsTaken = steps,
                     totalCalories = calories,
                     avgBpm = 0, // Placeholder until Bluetooth logic is backgrounded
-                    selfReportedStress = null,
-                    currentMood = null,
-                    sleepRating = null,
-                    tirednessLevel = null
+                    selfReportedStress = latestQuestionnaire?.stressLevel,
+                    currentMood = latestQuestionnaire?.mood,
+                    sleepRating = latestQuestionnaire?.sleepQuality,
+                    tirednessLevel = latestQuestionnaire?.mentalFatigue
                 )
 
                 // 5. Save to Room Database

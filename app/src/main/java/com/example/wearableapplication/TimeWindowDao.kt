@@ -38,4 +38,8 @@ interface TimeWindowDao {
     // 3. (Optional but recommended) Clear the database after a successful export
     @Query("DELETE FROM time_window_logs")
     suspend fun deleteAllRecords()
+
+    // 4. Retrieve N most recent records for retroactive labeling
+    @Query("SELECT * FROM time_window_logs ORDER BY windowStartTime DESC LIMIT :limit")
+    suspend fun getRecentRecords(limit: Int): List<TimeWindowRecords>
 }

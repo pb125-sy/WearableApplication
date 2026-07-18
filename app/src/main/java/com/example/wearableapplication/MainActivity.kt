@@ -43,6 +43,7 @@ import com.example.wearableapplication.model.StressFeatures
 import com.example.wearableapplication.model.AppUsage
 import com.example.wearableapplication.model.StressAnalysis
 import com.example.wearableapplication.model.Questionnaire
+import com.example.wearableapplication.model.QuestionnaireEntity
 
 import com.example.wearableapplication.JsonTest
 import androidx.work.PeriodicWorkRequestBuilder
@@ -127,6 +128,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.appBarMain.toolbar)
 
         setupHealthConnectPipeline()
+        android.util.Log.d("MAIN_TEST", "Scheduling DataHarvestWorker")
         startBackgroundDataHarvesting(this)
 
         /*
@@ -321,6 +323,38 @@ class MainActivity : AppCompatActivity() {
             val fatigue = dialogView.findViewById<RadioButton>(fatigueId).text.toString().toInt()
 
             val questionnaire = Questionnaire(stress, mood, sleep, fatigue)
+
+            /* NEW CODE STARTS HERE*/
+            // Save questionnaire and apply hybrid labeling
+            lifecycleScope.launch {
+                val db = AppDatabase.getDatabase(this@MainActivity)
+
+                // 1. Save as latest state
+                db.questionnaireDao().saveQuestionnaire(
+                    com.example.wearableapplication.model.QuestionnaireEntity(
+                        stressLevel = stress,
+                        mood = mood,
+                        sleepQuality = sleep,
+                        mentalFatigue = fatigue
+                    )
+                )
+
+                // 2. Retroactively label last 2 windows
+                val recentRecords = db.timeWindowDao().getRecentRecords(2)
+                recentRecords.forEach { record ->
+                    val updatedRecord = record.copy(
+                        selfReportedStress = stress,
+                        currentMood = mood,
+                        sleepRating = sleep,
+                        tirednessLevel = fatigue
+                    )
+                    db.timeWindowDao().insertRecord(updatedRecord)
+                }
+
+                android.util.Log.d("HybridLabeling", "Applied labels to ${recentRecords.size} recent records")
+            }
+            /*NEW CODE ENDS HERE*/
+
             runStressAnalysis(questionnaire)
             dialog.dismiss()
         }

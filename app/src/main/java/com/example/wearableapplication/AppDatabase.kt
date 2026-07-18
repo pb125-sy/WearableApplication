@@ -5,13 +5,15 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.example.wearableapplication.model.QuestionnaireEntity
 
-@Database(entities = [TimeWindowRecords::class], version = 1, exportSchema = false)
+@Database(entities = [TimeWindowRecords::class, QuestionnaireEntity::class], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
-    // Link the DAO (Data Access Object) containing your SQL queries
+    // Link the DAOs
     abstract fun timeWindowDao(): TimeWindowDao
+    abstract fun questionnaireDao(): QuestionnaireDao
 
     companion object {
         @Volatile
