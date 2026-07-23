@@ -62,7 +62,8 @@ class BluetoothBpmManager(
 
                     // Parse BPM — handles both "72" and "BPM:72" formats
                     val bpm = line.filter { it.isDigit() }.toIntOrNull()
-                    if (bpm != null && bpm in 30..220) {
+                    if (bpm != null) {
+                        onHeartRateReceived(bpm)
                         onBpmReceived(bpm)
                     }
                 }
@@ -87,5 +88,42 @@ class BluetoothBpmManager(
             Log.e("BPM", "Error closing socket: ${e.message}")
         }
         onStatusChanged("● Disconnected")
+    }
+
+    companion object {
+        // In-memory variables to hold the running totals for the current 15-minute window
+        private var totalHeartRateSum = 0
+        private var validReadingCount = 0
+
+        /**
+         * Call this function every time your Bluetooth sensor pushes a new value.
+         * It applies the Validity Filter (30-220 BPM) and increments the Dynamic Denominator.
+         */
+        fun onHeartRateReceived(bpm: Int) {
+            // 1. The Validity Filter: Only accept biologically plausible readings
+            if (bpm in 30..220) {
+                totalHeartRateSum += bpm
+                validReadingCount += 1 // 2. Dynamic Denominator: Only count good data
+            }
+        }
+
+        /**
+         * Call this from your DataHarvestWorker at the end of the 15 minutes.
+         * Returns the averaged integer if the Minimum Threshold (60s) is met, else null.
+         */
+        fun getAverageAndReset(): Int? {
+            // 3. Minimum Threshold: Require at least 60 valid readings (1 minute of data)
+            val finalAverage = if (validReadingCount >= 60) {
+                totalHeartRateSum / validReadingCount
+            } else {
+                null // Not enough data to be statistically significant
+            }
+
+            // Reset the counters for the next 15-minute window
+            totalHeartRateSum = 0
+            validReadingCount = 0
+
+            return finalAverage
+        }
     }
 }

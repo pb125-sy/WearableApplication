@@ -67,7 +67,7 @@ private fun startBackgroundDataHarvesting(context: Context) {
     // Enqueue unique work prevents multiple identical timers from running at the same time
     WorkManager.getInstance(context).enqueueUniquePeriodicWork(
         "HarvestDataWork",
-        ExistingPeriodicWorkPolicy.KEEP, // If it's already running, don't restart the timer
+        ExistingPeriodicWorkPolicy.UPDATE, // Forces the worker to update its configuration immediately
         harvestRequest
     )
 }
@@ -339,8 +339,8 @@ class MainActivity : AppCompatActivity() {
                     )
                 )
 
-                // 2. Retroactively label last 2 windows
-                val recentRecords = db.timeWindowDao().getRecentRecords(2)
+                // 2. Retroactively label last window
+                val recentRecords = db.timeWindowDao().getRecentRecords(1)
                 recentRecords.forEach { record ->
                     val updatedRecord = record.copy(
                         selfReportedStress = stress,

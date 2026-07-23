@@ -45,6 +45,12 @@ class CsvManager(private val context: Context) {
     }
 
     suspend fun appendRecordToCsv(record: TimeWindowRecords) {
+        appendRecordsToCsv(listOf(record))
+    }
+
+    suspend fun appendRecordsToCsv(records: List<TimeWindowRecords>) {
+        if (records.isEmpty()) return
+        
         withContext(Dispatchers.IO) {
             val fileName = "wearable_data_log.csv"
             val file = File(context.getExternalFilesDir(null), fileName)
@@ -55,9 +61,11 @@ class CsvManager(private val context: Context) {
                     if (isNewFile) {
                         writeHeader(writer)
                     }
-                    writeRecord(writer, record)
+                    records.forEach { record ->
+                        writeRecord(writer, record)
+                    }
                 }
-                Log.d("CsvManager", "Record appended to ${file.absolutePath}")
+                Log.d("CsvManager", "${records.size} records appended to ${file.absolutePath}")
             } catch (e: Exception) {
                 Log.e("CsvManager", "Error appending to CSV", e)
             }
@@ -65,17 +73,20 @@ class CsvManager(private val context: Context) {
     }
 
     private fun writeHeader(writer: FileWriter) {
-        writer.append("StartTime,ScreenTimeSec,UnlockCount,Steps,Calories,AvgBpm,Stress,Mood,Sleep,Tiredness\n")
+        writer.append("StartTime,ScreenTimeSec,SocialSec,GameEntSec,OtherSec,UnlockCount,Steps,Calories,AvgBpm,Stress,Mood,Sleep,Tiredness\n")
     }
 
     private fun writeRecord(writer: FileWriter, record: TimeWindowRecords) {
         val startTimeStr = formatter.format(record.windowStartTime)
         writer.append("$startTimeStr,")
         writer.append("${record.screenTimeSec},")
+        writer.append("${record.socialTimeSec},")
+        writer.append("${record.gamingEntertainmentTimeSec},")
+        writer.append("${record.otherTimeSec},")
         writer.append("${record.unlockCount},")
         writer.append("${record.stepsTaken},")
-        writer.append("${record.totalCalories},")
-        writer.append("${record.avgBpm},")
+        writer.append("%.2f,".format(record.totalCalories))
+        writer.append("${record.avgBpm ?: ""},")
         writer.append("${record.selfReportedStress ?: ""},")
         writer.append("${record.currentMood ?: ""},")
         writer.append("${record.sleepRating ?: ""},")

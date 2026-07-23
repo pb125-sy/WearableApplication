@@ -1146,6 +1146,58 @@ class ScreenTimeManager(
 
         return usage.values.sum() / 1000
     }
+
+    /**
+     * Categorized usage for a specific time window.
+     * Maps package names to Social, Gaming/Entertainment, or Other.
+     */
+    data class CategoryUsage(
+        val socialSec: Long,
+        val gamingEntertainmentSec: Long,
+        val otherSec: Long
+    )
+
+    private val categoryCache = mutableMapOf<String, Int>()
+
+    fun getCategoryUsageForWindow(startTime: Instant, endTime: Instant): CategoryUsage {
+        if (!hasPermission()) return CategoryUsage(0, 0, 0)
+
+        val usageMap = collectUsageEvents(
+            startTime.toEpochMilli(),
+            endTime.toEpochMilli()
+        )
+
+        var social = 0L
+        var gamingEntertainment = 0L
+        var other = 0L
+
+        val pm = context.packageManager
+
+        usageMap.forEach { (packageName, durationMs) ->
+            val durationSec = durationMs / 1000
+
+            val category = categoryCache.getOrPut(packageName) {
+                try {
+                    val info = pm.getApplicationInfo(packageName, 0)
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        info.category
+                    } else {
+                        -1
+                    }
+                } catch (e: Exception) {
+                    -1
+                }
+            }
+
+            when (category) {
+                4 -> social += durationSec // CATEGORY_SOCIAL
+                0, 1, 2, 3 -> gamingEntertainment += durationSec // GAME, AUDIO, VIDEO, IMAGE
+                else -> other += durationSec
+            }
+        }
+
+        return CategoryUsage(social, gamingEntertainment, other)
+    }
     fun getUnlocksForWindow(startTime: java.time.Instant, endTime: java.time.Instant): Int {
         if (!hasPermission()) return 0
         val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager

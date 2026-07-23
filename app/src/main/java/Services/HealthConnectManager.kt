@@ -84,7 +84,7 @@ class HealthConnectManager(private val context: Context) {
     }
 
     @RequiresExtension(extension = Build.VERSION_CODES.UPSIDE_DOWN_CAKE, version = 7)
-    suspend fun readCaloriesForWindow(startTime : Instant, endTime : Instant): Int {
+    suspend fun readCaloriesForWindow(startTime : Instant, endTime : Instant): Double {
         val request = AggregateRequest(
             metrics = setOf(TotalCaloriesBurnedRecord.ENERGY_TOTAL),
             timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
@@ -92,10 +92,10 @@ class HealthConnectManager(private val context: Context) {
 
         return try {
             val response = healthConnectClient.aggregate(request)
-            response[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories?.toInt() ?: 0
+            response[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories ?: 0.0
         } catch (e: Exception) {
             android.util.Log.e("HealthConnect", "Failed to read steps for window", e)
-            0 // Or return a nullable Int? (null) if your Room DB is set up to handle missing data
+            0.0
         }
     }
 }

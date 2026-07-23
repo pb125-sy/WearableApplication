@@ -13,4 +13,7 @@ interface QuestionnaireDao {
 
     @Query("SELECT * FROM latest_questionnaire WHERE id = 0")
     suspend fun getLatestQuestionnaire(): QuestionnaireEntity?
+
+    @Query("DELETE FROM latest_questionnaire")
+    suspend fun clearQuestionnaire()
 }

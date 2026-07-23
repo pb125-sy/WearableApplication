@@ -199,12 +199,6 @@
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
-                <ProgressBar
-                    android:id="@+id/progressAnalysis"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp" />
-
                 <TextView
                     android:id="@+id/txtAnalysis"
                     android:layout_width="match_parent"

@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.wearableapplication.model.QuestionnaireEntity
 
-@Database(entities = [TimeWindowRecords::class, QuestionnaireEntity::class], version = 1, exportSchema = false)
+@Database(entities = [TimeWindowRecords::class, QuestionnaireEntity::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
@@ -26,7 +26,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "wearable_research_db"
-                ).build()
+                )
+                .fallbackToDestructiveMigration()
+                .build()
                 INSTANCE = instance
                 instance
             }

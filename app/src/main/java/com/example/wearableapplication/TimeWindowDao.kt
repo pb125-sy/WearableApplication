@@ -15,12 +15,17 @@ data class TimeWindowRecords(
     val screenTimeSec: Long,
     val unlockCount: Int,
     val stepsTaken: Int,
-    val totalCalories: Int,
-    val avgBpm: Int,
+    val totalCalories: Double,
+    val avgBpm: Int?,
     val selfReportedStress: Int?,
     val currentMood: String?,
     val sleepRating: Int?,
-    val tirednessLevel: Int?
+    val tirednessLevel: Int?,
+
+    // Category Tracking (New in Version 2)
+    val socialTimeSec: Long = 0,
+    val gamingEntertainmentTimeSec: Long = 0,
+    val otherTimeSec: Long = 0
 )
 @Dao
 interface TimeWindowDao {
@@ -42,4 +47,7 @@ interface TimeWindowDao {
     // 4. Retrieve N most recent records for retroactive labeling
     @Query("SELECT * FROM time_window_logs ORDER BY windowStartTime DESC LIMIT :limit")
     suspend fun getRecentRecords(limit: Int): List<TimeWindowRecords>
+
+    @Query("SELECT * FROM time_window_logs ORDER BY windowStartTime DESC LIMIT 1")
+    suspend fun getLatestRecord(): TimeWindowRecords?
 }
